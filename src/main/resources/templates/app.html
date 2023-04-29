@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鍵生成・暗号化・署名サンプル</title>
+  <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+  <header class="bg-primary text-white py-3">
+    <div class="container">
+      <h1>鍵生成・暗号化・署名サンプル</h1>
+    </div>
+  </header>
+
+  <div class="container py-5">
+
+    <!-- タブ部分 -->
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item">
+        <a class="nav-link active" href="#keygen" data-bs-toggle="tab">鍵生成</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#encrypt" data-bs-toggle="tab">暗号化</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#decrypt" data-bs-toggle="tab">復号</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#signature" data-bs-toggle="tab">署名</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#verify" data-bs-toggle="tab">検証</a>
+      </li>
+    </ul>
+
+    <!-- タブ内容部分 -->
+    <div class="tab-content">
+      <!-- 鍵生成タブ -->
+      <div class="tab-pane fade show active" id="keygen">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="mb-3">
+              <label for="key-type" class="form-label">鍵種別</label>
+              <select class="form-select" id="key-type">
+                <option selected disabled>選択してください</option>
+                <option value="RSA">RSA</option>
+                <option value="AES">AES</option>
+                <option value="EC">EC</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="mb-3">
+              <label for="key-length" class="form-label">鍵長</label>
+              <select class="form-select" id="key-length">
+                <option selected disabled>選択してください</option>
+                <option value="3072">3072</option>
+                <option value="2048">2048</option>
+                <option value="1024">1024</option>
+                <option value="512">512</option>
+                <option value="256">256</option>
+                <option value="128">128</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <button type="button" class="btn btn-primary mb-3" id="exec-keygen">実行</button>
+            <button type="button" class="btn btn-primary mb-3" id="clear-keygen">クリア</button>
+          </div>
+        </div>
+        <div class="err" id="keygen-err-msg"></div>
+        <div class="mb-3">
+          <p>生成結果</p>
+          <label for="key-result" class="form-label">【秘密鍵】</label>
+          <textarea class="form-control" id="private-key-result" rows="5" readonly></textarea>
+          <label for="key-result" class="form-label">【公開鍵】</label>
+          <textarea class="form-control" id="public-key-result" rows="5" readonly></textarea>
+        </div>
+      </div>
+
+      <!-- 暗号化タブ -->
+      <div class="tab-pane fade" id="encrypt">
+          <div class="mb-3">
+            <label for="encrypt-algorithm" class="form-label">アルゴリズム</label>
+            <select class="form-select" id="encrypt-algorithm">
+              <option selected disabled>選択してください</option>
+              <option value="AES/CBC/NoPadding">AES/CBC/NoPadding</option>
+              <option value="AES/CBC/PKCS5Padding">AES/CBC/PKCS5Padding</option>
+              <option value="RSA/ECB/PKCS1Padding">RSA/ECB/PKCS1Padding</option>
+              <option value="RSA/ECB/OAEPWithSHA-1AndMGF1Padding">RSA/ECB/OAEPWithSHA-1AndMGF1Padding</option>
+              <option value="RSA/ECB/OAEPWithSHA-256AndMGF1Padding">RSA/ECB/OAEPWithSHA-256AndMGF1Padding</option>
+            </select>
+          </div>
+        <div class="mb-3">
+          <label for="encrypt-key" class="form-label">暗号鍵</label>
+          <input type="text" class="form-control" id="encrypt-key" required>
+        </div>
+        <div class="mb-3">
+          <label for="encrypt-iv" class="form-label">IV</label>
+          <input type="text" class="form-control" id="encrypt-iv">
+        </div>
+        <div class="mb-3">
+          <label for="encrypt-data" class="form-label">暗号化対象データ</label>
+          <textarea class="form-control" id="encrypt-data" rows="5" required></textarea>
+        </div>
+        <button type="button" class="btn btn-primary mb-3" id="exec-encrypt">実行</button>
+        <button type="button" class="btn btn-primary mb-3" id="clear-encrypt">クリア</button>
+        <div class="err" id="encrypt-err-msg"></div>
+        <div class="mb-3">
+          <label for="encrypt-result" class="form-label">暗号化結果</label>
+          <textarea class="form-control" id="encrypt-result" rows="5" readonly></textarea>
+        </div>
+      </div>
+
+      <!-- 復号タブ -->
+      <div class="tab-pane fade" id="decrypt">
+        <div class="mb-3">
+          <label for="decrypt-algorithm" class="form-label">アルゴリズム</label>
+          <select class="form-select" id="decrypt-algorithm">
+            <option selected disabled>選択してください</option>
+            <option value="AES/CBC/NoPadding">AES/CBC/NoPadding</option>
+            <option value="AES/CBC/PKCS5Padding">AES/CBC/PKCS5Padding</option>
+            <option value="RSA/ECB/PKCS1Padding">RSA/ECB/PKCS1Padding</option>
+            <option value="RSA/ECB/OAEPWithSHA-1AndMGF1Padding">RSA/ECB/OAEPWithSHA-1AndMGF1Padding</option>
+            <option value="RSA/ECB/OAEPWithSHA-256AndMGF1Padding">RSA/ECB/OAEPWithSHA-256AndMGF1Padding</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="decrypt-key" class="form-label">復号鍵</label>
+          <input type="text" class="form-control" id="decrypt-key">
+        </div>
+        <div class="mb-3">
+          <label for="encrypt-iv" class="form-label">IV</label>
+          <input type="text" class="form-control" id="decrypt-iv">
+        </div>
+        <div class="mb-3">
+          <label for="decrypt-data" class="form-label">復号対象データ</label>
+          <textarea class="form-control" id="decrypt-data" rows="5"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary mb-3" id="exec-decrypt">実行</button>
+        <button type="button" class="btn btn-primary mb-3" id="clear-decrypt">クリア</button>
+        <div class="err" id="decrypt-err-msg"></div>
+        <div class="mb-3">
+          <label for="decrypt-result" class="form-label">復号結果</label>
+          <textarea class="form-control" id="decrypt-result" rows="5" readonly></textarea>
+        </div>
+      </div>
+
+      <!-- 署名タブ -->
+      <div class="tab-pane fade" id="signature">
+        <div class="mb-3">
+          <label for="signature-algorithm" class="form-label">アルゴリズム</label>
+          <select class="form-select" id="signature-algorithm">
+            <option selected disabled>選択してください</option>
+            <option value="NONEwithRSA">NONEwithRSA</option>
+            <option value="SHA1withRSA">SHA1withRSA</option>
+            <option value="SHA224withRSA">SHA224withRSA</option>
+            <option value="SHA256withRSA">SHA256withRSA</option>
+            <option value="SHA384withRSA">SHA384withRSA</option>
+            <option value="SHA512withRSA">SHA512withRSA</option>
+            <option value="NONEwithECDSA">NONEwithECDSA</option>
+            <option value="SHA1withECDSA">SHA1withECDSA</option>
+            <option value="SHA224withECDSA">SHA224withECDSA</option>
+            <option value="SHA256withECDSA">SHA256withECDSA</option>
+            <option value="RSHA384withECDSA">SHA384withECDSA</option>
+            <option value="SHA512withECDSA">SHA512withECDSA</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="signature-key" class="form-label">署名鍵</label>
+          <input type="text" class="form-control" id="signature-key">
+        </div>
+        <div class="mb-3">
+          <label for="signature-target-data" class="form-label">署名対象データ</label>
+          <textarea class="form-control" id="signature-target-data" rows="5"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary mb-3" id="exec-sign">実行</button>
+        <button type="button" class="btn btn-primary mb-3" id="clear-sign">クリア</button>
+        <div class="err" id="signature-err-msg"></div>
+        <div class="mb-3">
+          <label for="signature-result" class="form-label">署名結果</label>
+          <textarea class="form-control" id="signature-result" rows="5" readonly></textarea>
+        </div>
+      </div>
+
+      <!-- 署名検証タブ -->
+      <div class="tab-pane fade" id="verify">
+        <div class="mb-3">
+          <label for="verify-algorithm" class="form-label">アルゴリズム</label>
+          <select class="form-select" id="verify-algorithm">
+            <option selected disabled>選択してください</option>
+            <option value="NONEwithRSA">NONEwithRSA</option>
+            <option value="SHA1withRSA">SHA1withRSA</option>
+            <option value="SHA224withRSA">SHA224withRSA</option>
+            <option value="SHA256withRSA">SHA256withRSA</option>
+            <option value="SHA384withRSA">SHA384withRSA</option>
+            <option value="SHA512withRSA">SHA512withRSA</option>
+            <option value="NONEwithECDSA">NONEwithECDSA</option>
+            <option value="SHA1withECDSA">SHA1withECDSA</option>
+            <option value="SHA224withECDSA">SHA224withECDSA</option>
+            <option value="SHA256withECDSA">SHA256withECDSA</option>
+            <option value="RSHA384withECDSA">SHA384withECDSA</option>
+            <option value="SHA512withECDSA">SHA512withECDSA</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="verify-key" class="form-label">検証鍵</label>
+          <input type="text" class="form-control" id="verify-key">
+        </div>
+        <div class="mb-3">
+          <label for="verify-sign" class="form-label">署名</label>
+          <input type="text" class="form-control" id="verify-sign">
+        </div>
+        <div class="mb-3">
+          <label for="sign-data" class="form-label">検証データ</label>
+          <textarea class="form-control" id="verify-data" rows="5"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary mb-3" id="exec-verify">実行</button>
+        <button type="button" class="btn btn-primary mb-3" id="clear-verify">クリア</button>
+        <div class="err" id="verify-err-msg"></div>
+        <div class="mb-3">
+          <label for="verify-result" class="form-label">検証結果</label>
+          <input type="text" class="form-control" id="verify-result" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/bootstrap.min.js}"></script>
+  <script th:src="@{/js/jquery-3.4.1.min.js}"></script>
+  <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

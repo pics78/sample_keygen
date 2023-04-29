@@ -1,0 +1,7 @@
+@charset "UTF-8";
+
+.err {
+    color: red;
+    font-size: 12px;
+    padding: 10px 0;
+}
