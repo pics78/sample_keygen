@@ -3,10 +3,10 @@ package com.sample_keygen.sample_keygen.services;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -32,12 +32,12 @@ public class RsaDecryptor extends Decryptor implements Decryptable {
 
         // 与えられたアルゴリズムと鍵情報から公開鍵オブジェクトを生成
         KeyFactory factoty = KeyFactory.getInstance(RSA);
-        KeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-        RSAPublicKey publicKey = (RSAPublicKey) factoty.generatePublic(keySpec);
+        KeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+        RSAPrivateKey privateKey = (RSAPrivateKey) factoty.generatePrivate(keySpec);
 
         // 指定したアルゴリズムで復号するCipherオブジェクトを生成
         Cipher decrypter = Cipher.getInstance(algorithm);
-        decrypter.init(Cipher.DECRYPT_MODE, publicKey);
+        decrypter.init(Cipher.DECRYPT_MODE, privateKey);
 
         return new RsaDecryptor(decrypter);
     }
